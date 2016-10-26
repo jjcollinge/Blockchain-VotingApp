@@ -114,3 +114,8 @@
   padding: 8px;
   margin-top: 15px;
 }
+
+.App-error-text {
+  margin: 40px;
+  color: red;
+}

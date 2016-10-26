@@ -6,8 +6,9 @@ import Web3 from 'web3'
 // Load ethereum client globally
 var web3 = new Web3(new Web3.providers.HttpProvider("http://localhost:8545"));
 
-var abi = [{ "constant": false, "inputs": [], "name": "getCurrentVoters", "outputs": [{ "name": "", "type": "uint256" }], "payable": false, "type": "function" }, { "constant": true, "inputs": [{ "name": "", "type": "uint256" }], "name": "currentVoters", "outputs": [{ "name": "", "type": "string" }], "payable": false, "type": "function" }, { "constant": true, "inputs": [], "name": "currentProposalIndex", "outputs": [{ "name": "", "type": "uint256" }], "payable": false, "type": "function" }, { "constant": false, "inputs": [], "name": "closeVote", "outputs": [], "payable": false, "type": "function" }, { "constant": true, "inputs": [], "name": "votingIsOpen", "outputs": [{ "name": "", "type": "bool" }], "payable": false, "type": "function" }, { "constant": false, "inputs": [], "name": "getCurrentProposal", "outputs": [{ "name": "", "type": "uint256" }, { "name": "", "type": "string" }, { "name": "", "type": "string" }], "payable": false, "type": "function" }, { "constant": false, "inputs": [], "name": "getResults", "outputs": [{ "name": "", "type": "string" }, { "name": "", "type": "uint256" }, { "name": "", "type": "string" }, { "name": "", "type": "uint256" }], "payable": false, "type": "function" }, { "constant": false, "inputs": [{ "name": "voteIndex", "type": "uint256" }, { "name": "voterId", "type": "string" }, { "name": "option", "type": "int256" }], "name": "submitVote", "outputs": [{ "name": "", "type": "bool" }], "payable": false, "type": "function" }, { "constant": false, "inputs": [], "name": "nextVote", "outputs": [], "payable": false, "type": "function" }, { "inputs": [], "type": "constructor" }]
-var address = '0x5ab0b68aaff53f5ade91d120f1e1f25b03e27ca4';
+var abi = [{"constant":true,"inputs":[],"name":"getCurrentVoters","outputs":[{"name":"","type":"uint256"}],"payable":false,"type":"function"},{"constant":true,"inputs":[{"name":"","type":"uint256"}],"name":"currentVoters","outputs":[{"name":"","type":"string"}],"payable":false,"type":"function"},{"constant":true,"inputs":[],"name":"currentProposalIndex","outputs":[{"name":"","type":"uint256"}],"payable":false,"type":"function"},{"constant":false,"inputs":[],"name":"closeVote","outputs":[],"payable":false,"type":"function"},{"constant":true,"inputs":[],"name":"votingIsOpen","outputs":[{"name":"","type":"bool"}],"payable":false,"type":"function"},{"constant":true,"inputs":[],"name":"getCurrentProposal","outputs":[{"name":"","type":"uint256"},{"name":"","type":"string"},{"name":"","type":"string"}],"payable":false,"type":"function"},{"constant":true,"inputs":[],"name":"getResults","outputs":[{"name":"","type":"string"},{"name":"","type":"uint256"},{"name":"","type":"string"},{"name":"","type":"uint256"}],"payable":false,"type":"function"},{"constant":true,"inputs":[{"name":"voterId","type":"string"}],"name":"canVote","outputs":[{"name":"","type":"bool"}],"payable":false,"type":"function"},{"constant":false,"inputs":[{"name":"voteIndex","type":"uint256"},{"name":"voterId","type":"string"},{"name":"option","type":"int256"}],"name":"submitVote","outputs":[{"name":"","type":"bool"}],"payable":false,"type":"function"},{"constant":false,"inputs":[],"name":"nextVote","outputs":[],"payable":false,"type":"function"},{"constant":false,"inputs":[{"name":"a","type":"string"},{"name":"b","type":"string"}],"name":"stringEquals","outputs":[{"name":"","type":"bool"}],"payable":false,"type":"function"},{"inputs":[],"type":"constructor"}]
+
+var address = '0xbac8598737b79ad5a5a09eabb0483d2acaacdb25';
 var contract;
 
 class App extends Component {
@@ -26,7 +27,9 @@ class App extends Component {
       optionBEnabled: false,
       showResults: false,
       results: "Results will be displayed when voting is closed.",
-      proposalIndex: -1
+      proposalIndex: -1,
+      showError: false,
+      error: ""
     }
     contract = web3.eth.contract(abi).at(address);
   }
@@ -69,8 +72,15 @@ class App extends Component {
    * transaction ready to be mined.
    */
   submitVote(option) {
-    console.log("Vote cast: " + option);
-    contract.submitVote(this.state.proposalIndex, this.state.username, option);
+    var canVote = contract.canVote.call(this.state.username);
+    if (canVote) {
+      console.log("Vote cast: " + option);
+      contract.submitVote(this.state.proposalIndex, this.state.username, option);
+      return true;
+    } else {
+      console.log("Cannot vote - username conflict!");
+      return false;
+    }
   }
 
   /**
@@ -117,15 +127,23 @@ class App extends Component {
    * Will orchestrate the logical response to a client voting.
    */
   handleVoteClick(option) {
-    this.submitVote(option);
-    // Stop client voting again
-    this.setState({
-      optionAEnabled: false,
-      optionBEnabled: false,
-      showResults: true
-    });
-    this.getResults();
-    this.nextProposal();
+    var voted = this.submitVote(option);
+
+    if (voted) {
+      // Stop client voting again
+      this.setState({
+        optionAEnabled: false,
+        optionBEnabled: false,
+        showResults: true
+      });
+      this.getResults();
+      this.nextProposal();
+    } else {
+      this.setState({
+        showError: true,
+        error: "Username conflict, please refresh the page and enter a new one!"
+      });
+    }
   }
 
   /**
@@ -172,6 +190,9 @@ class App extends Component {
         </div>
         <div className={this.state.showResults ? 'App-results' : 'hidden'}>
           <p className="App-results-text">{this.state.results}</p>
+        </div>
+        <div className={this.state.showError ? 'App-error' : 'hidden'}>
+          <p className="App-error-text">{this.state.error}</p>
         </div>
       </div>
     );
