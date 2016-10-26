@@ -69,17 +69,43 @@ contract VoteOff {
         return false;
     }
 
-    function getCurrentProposal() public returns (uint, string, string) {
+    function canVote(string voterId) public constant returns (bool) {
+        // For each voter current registered in the currentVoters array
+        for(uint i = 0; i < currentVoters.length; i++) {
+            if(stringEquals(voterId, currentVoters[i])) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    function stringEquals(string a, string b) returns (bool) {
+        bytes memory _a = bytes(a);
+        bytes memory _b = bytes(b);
+        // If not same length - cannot be same value
+        if(_a.length != _b.length) {
+            return false;
+        } else {
+            for(uint j = 0; j < _a.length; j++) {
+                // Compare each byte
+                if(_a[j] != _b[j])
+                    return false;
+            }
+        }
+        return true;
+    }
+
+    function getCurrentProposal() public constant returns (uint, string, string) {
         return (currentProposalIndex, proposals[currentProposalIndex].optionA.name, proposals[currentProposalIndex].optionB.name);
     }
 
-    function getResults() public returns (string, uint, string, uint) {
+    function getResults() public constant returns (string, uint, string, uint) {
         option optionA = proposals[currentProposalIndex].optionA;
         option optionB = proposals[currentProposalIndex].optionB;
         return (optionA.name, optionA.count, optionB.name, optionB.count);
     }
 
-    function getCurrentVoters() public returns (uint) {
+    function getCurrentVoters() public constant returns (uint) {
         return currentVoters.length;
     }
 

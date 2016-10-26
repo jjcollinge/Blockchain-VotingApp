@@ -91,7 +91,7 @@
 }
 
 .App-login-btn {
-  margin-left: 10px;
+  margin: 15px;
   background-color: mediumseagreen;
   -webkit-text-fill-color: white;
   box-shadow: none;
@@ -105,10 +105,12 @@
 }
 
 .App-login-prompt {
-  font-size: 0.5em;
+  font-size: 1em;
+  width: 60%;
+  margin: auto;
 }
 
 .App-login-text {
-  padding: 5px;
+  padding: 8px;
   margin-top: 15px;
 }
