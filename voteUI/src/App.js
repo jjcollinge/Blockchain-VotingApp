@@ -6,10 +6,12 @@ import Web3 from 'web3'
 // Load ethereum client globally
 var web3 = new Web3(new Web3.providers.HttpProvider("http://localhost:8545"));
 
-var abi = [{"constant":true,"inputs":[],"name":"getCurrentVoters","outputs":[{"name":"","type":"uint256"}],"payable":false,"type":"function"},{"constant":true,"inputs":[{"name":"","type":"uint256"}],"name":"currentVoters","outputs":[{"name":"","type":"string"}],"payable":false,"type":"function"},{"constant":true,"inputs":[],"name":"currentProposalIndex","outputs":[{"name":"","type":"uint256"}],"payable":false,"type":"function"},{"constant":false,"inputs":[],"name":"closeVote","outputs":[],"payable":false,"type":"function"},{"constant":true,"inputs":[],"name":"votingIsOpen","outputs":[{"name":"","type":"bool"}],"payable":false,"type":"function"},{"constant":true,"inputs":[],"name":"getCurrentProposal","outputs":[{"name":"","type":"uint256"},{"name":"","type":"string"},{"name":"","type":"string"}],"payable":false,"type":"function"},{"constant":true,"inputs":[],"name":"getResults","outputs":[{"name":"","type":"string"},{"name":"","type":"uint256"},{"name":"","type":"string"},{"name":"","type":"uint256"}],"payable":false,"type":"function"},{"constant":true,"inputs":[{"name":"voterId","type":"string"}],"name":"canVote","outputs":[{"name":"","type":"bool"}],"payable":false,"type":"function"},{"constant":false,"inputs":[{"name":"voteIndex","type":"uint256"},{"name":"voterId","type":"string"},{"name":"option","type":"int256"}],"name":"submitVote","outputs":[{"name":"","type":"bool"}],"payable":false,"type":"function"},{"constant":false,"inputs":[],"name":"nextVote","outputs":[],"payable":false,"type":"function"},{"constant":false,"inputs":[{"name":"a","type":"string"},{"name":"b","type":"string"}],"name":"stringEquals","outputs":[{"name":"","type":"bool"}],"payable":false,"type":"function"},{"inputs":[],"type":"constructor"}]
+var abi = [{"constant":true,"inputs":[],"name":"getCurrentVoters","outputs":[{"name":"","type":"uint256"}],"payable":false,"type":"function"},{"constant":true,"inputs":[{"name":"","type":"uint256"}],"name":"currentVoters","outputs":[{"name":"","type":"string"}],"payable":false,"type":"function"},{"constant":true,"inputs":[],"name":"currentProposalIndex","outputs":[{"name":"","type":"uint256"}],"payable":false,"type":"function"},{"constant":false,"inputs":[],"name":"closeVote","outputs":[],"payable":false,"type":"function"},{"constant":true,"inputs":[],"name":"votingIsOpen","outputs":[{"name":"","type":"bool"}],"payable":false,"type":"function"},{"constant":true,"inputs":[],"name":"getCurrentProposal","outputs":[{"name":"","type":"uint256"},{"name":"","type":"string"},{"name":"","type":"string"}],"payable":false,"type":"function"},{"constant":true,"inputs":[],"name":"getResults","outputs":[{"name":"","type":"string"},{"name":"","type":"uint256"},{"name":"","type":"string"},{"name":"","type":"uint256"}],"payable":false,"type":"function"},{"constant":true,"inputs":[{"name":"voterId","type":"string"}],"name":"canVote","outputs":[{"name":"","type":"bool"},{"name":"","type":"string"}],"payable":false,"type":"function"},{"constant":false,"inputs":[{"name":"voteIndex","type":"uint256"},{"name":"voterId","type":"string"},{"name":"option","type":"int256"}],"name":"submitVote","outputs":[{"name":"","type":"bool"}],"payable":false,"type":"function"},{"constant":false,"inputs":[],"name":"nextVote","outputs":[],"payable":false,"type":"function"},{"constant":false,"inputs":[{"name":"a","type":"string"},{"name":"b","type":"string"}],"name":"stringEquals","outputs":[{"name":"","type":"bool"}],"payable":false,"type":"function"},{"inputs":[],"type":"constructor"}]
 
-var address = '0xbac8598737b79ad5a5a09eabb0483d2acaacdb25';
+var address = '0x589421a295d6220a9549922b2c5d3545d627a36a';
 var contract;
+
+var defaultVotedMsg = "Thank you for voting! Results will be displayed when voting is closed.";
 
 class App extends Component {
 
@@ -26,7 +28,7 @@ class App extends Component {
       optionB: "loading...",
       optionBEnabled: false,
       showResults: false,
-      results: "Results will be displayed when voting is closed.",
+      results: defaultVotedMsg,
       proposalIndex: -1,
       showError: false,
       error: ""
@@ -43,14 +45,16 @@ class App extends Component {
   nextProposal() {
     var res;
     var self = this;
+
+    // Poll the blockchain proposal to see if vote has progressed
     var timerId = setInterval(function () {
       res = contract.getCurrentProposal.call();
       var index = res[0].c[0]; // Unencoding BigNumber
       console.dir("Blockchain proposal index: " + index + "\nLocal proposal index: " + self.state.proposalIndex);
 
-      // If blockchain index is different to client index
-      // migrate to the blockchain index and stop checking
+      // If blockchain index is different to client index...
       if (self.state.proposalIndex !== index) {
+        // ...migrate to the blockchain index and stop checking
         self.setState({
           optionA: res[1],
           optionAEnabled: true,
@@ -58,7 +62,7 @@ class App extends Component {
           optionBEnabled: true,
           proposalIndex: index,
           showResults: false,
-          results: "Results will be displayed when voting is closed."
+          results: defaultVotedMsg // Reset message
         });
         clearInterval(timerId);
       }
@@ -72,13 +76,18 @@ class App extends Component {
    * transaction ready to be mined.
    */
   submitVote(option) {
-    var canVote = contract.canVote.call(this.state.username);
+    var res = contract.canVote.call(this.state.username);
+    var canVote = res[0];
+    var reason = res[1];
     if (canVote) {
       console.log("Vote cast: " + option);
       contract.submitVote(this.state.proposalIndex, this.state.username, option);
       return true;
     } else {
-      console.log("Cannot vote - username conflict!");
+      console.log("Cannot vote: " + reason);
+      this.setState({
+        error: reason
+      });
       return false;
     }
   }
@@ -99,8 +108,8 @@ class App extends Component {
       var optionB = res[2];
       var totalVotesForOptionA = res[1].c[0];
       var totalVotesForOptionB = res[3].c[0];
-      console.log("OpA votes: " + totalVotesForOptionA);
-      console.log("OpB votes: " + totalVotesForOptionB);
+      console.log("Total votes for " + optionA + ":" + totalVotesForOptionA);
+      console.log("Total votes for " + optionB + ":" + totalVotesForOptionB);
 
       if (totalVotesForOptionA !== 0 || totalVotesForOptionB !== 0) {
         // Votes are registered so assume voting closed
@@ -139,9 +148,9 @@ class App extends Component {
       this.getResults();
       this.nextProposal();
     } else {
+      // Didn't vote for some reason - show error
       this.setState({
-        showError: true,
-        error: "Username conflict, please refresh the page and enter a new one!"
+        showError: true
       });
     }
   }
@@ -154,9 +163,11 @@ class App extends Component {
    * the user locks the username by pressing submit.
    */
   handleUsernameChange(evt) {
-    console.dir("Set username to: " + evt.target.value);
+    var uname = evt.target.value;
+    uname = uname.replace(/[^a-zA-Z0-9]/g, '').substring(0, 10).toUpperCase();
+    console.dir("Set username to: " + uname);
     this.setState({
-      username: evt.target.value.toUpperCase(),
+      username: uname,
     });
   }
 

@@ -69,30 +69,19 @@ contract VoteOff {
         return false;
     }
 
-    function canVote(string voterId) public constant returns (bool) {
-        // For each voter current registered in the currentVoters array
+    function canVote(string voterId) public constant returns (bool, string) {
+        // Is vote open?
+        if(!votingIsOpen) return (false, "Voting is currently closed");
+
+        // Has voterId already been used?
         for(uint i = 0; i < currentVoters.length; i++) {
             if(stringEquals(voterId, currentVoters[i])) {
-                return false;
+                return (false, "Voter ID conflict, try again with a new ID");
             }
         }
-        return true;
-    }
 
-    function stringEquals(string a, string b) returns (bool) {
-        bytes memory _a = bytes(a);
-        bytes memory _b = bytes(b);
-        // If not same length - cannot be same value
-        if(_a.length != _b.length) {
-            return false;
-        } else {
-            for(uint j = 0; j < _a.length; j++) {
-                // Compare each byte
-                if(_a[j] != _b[j])
-                    return false;
-            }
-        }
-        return true;
+        // Can vote with provided voterId
+        return (true, "Thank you for voting!");
     }
 
     function getCurrentProposal() public constant returns (uint, string, string) {
@@ -152,6 +141,22 @@ contract VoteOff {
 
         // Reopen voting
         votingIsOpen = true;
+    }
+
+    function stringEquals(string a, string b) returns (bool) {
+        bytes memory _a = bytes(a);
+        bytes memory _b = bytes(b);
+        // If not same length - cannot be same value
+        if(_a.length != _b.length) {
+            return false;
+        } else {
+            for(uint j = 0; j < _a.length; j++) {
+                // Compare each byte
+                if(_a[j] != _b[j])
+                    return false;
+            }
+        }
+        return true;
     }
 
 }
