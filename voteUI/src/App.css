@@ -1,5 +1,6 @@
 .App {
   text-align: center;
+  font-family: Arial, Helvetica, sans-serif;
 }
 
 .App-logo {
@@ -26,13 +27,38 @@
 
 .App-optionA-btn {
   float: left;
-  padding: 15px;
+  padding: 20px;
+  background-color: dodgerblue;
+  border: none;
+  color:white;
+  border-radius: 8px;
+}
+
+.App-optionA-btn:hover {
+  background-color: #125699;
+}
+
+.App-optionA-btn:disabled {
+  background-color: lightslategrey;
 }
 
 .App-optionB-btn {
   float: left;
-  padding: 15px;
+  padding: 20px;
+  background-color: mediumseagreen;
+  border: none;
+  color:white;
+  border-radius: 8px;
 }
+
+.App-optionB-btn:hover {
+  background-color: seagreen;
+}
+
+.App-optionB-btn:disabled {
+  background-color: lightslategrey;
+}
+
 
 .vs {
   float: left;
@@ -41,12 +67,46 @@
   font-size: 1.5em
 }
 
-.App-results {
-  display: block,
+.App-username {
+  display: block;
+  color: lightgrey;
+  font-size: 1.7em;
 }
 
-.App-results-hidden {
-  display: none
+.App-results {
+  display: block;
+}
+
+.hidden {
+  display: none;
+}
+
+.App-login {
+  display: block;
+  margin: 30px 0px 20px 0px;
+}
+
+.App-login-btn {
+  margin-left: 10px;
+  background-color: mediumseagreen;
+  -webkit-text-fill-color: white;
+  box-shadow: none;
+  border-radius: none;
+  -webkit-appearance: none;
+  outline: none;
+  border: none;
+  text-shadow: none;
+  padding: 7px;
+  border-radius: 5px;
+}
+
+.App-login-prompt {
+  font-size: 0.5em;
+}
+
+.App-login-text {
+  padding: 5px;
+  margin-top: 15px;
 }
 
 @keyframes App-logo-spin {
