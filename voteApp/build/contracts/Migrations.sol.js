@@ -347,6 +347,71 @@ var SolidityEvent = require("web3/lib/web3/event.js");
   };
 
   Contract.all_networks = {
+  "26092009": {
+    "abi": [
+      {
+        "constant": false,
+        "inputs": [
+          {
+            "name": "new_address",
+            "type": "address"
+          }
+        ],
+        "name": "upgrade",
+        "outputs": [],
+        "payable": false,
+        "type": "function"
+      },
+      {
+        "constant": true,
+        "inputs": [],
+        "name": "last_completed_migration",
+        "outputs": [
+          {
+            "name": "",
+            "type": "uint256"
+          }
+        ],
+        "payable": false,
+        "type": "function"
+      },
+      {
+        "constant": true,
+        "inputs": [],
+        "name": "owner",
+        "outputs": [
+          {
+            "name": "",
+            "type": "address"
+          }
+        ],
+        "payable": false,
+        "type": "function"
+      },
+      {
+        "constant": false,
+        "inputs": [
+          {
+            "name": "completed",
+            "type": "uint256"
+          }
+        ],
+        "name": "setCompleted",
+        "outputs": [],
+        "payable": false,
+        "type": "function"
+      },
+      {
+        "inputs": [],
+        "type": "constructor"
+      }
+    ],
+    "unlinked_binary": "0x606060405260008054600160a060020a0319163317905561014f806100246000396000f3606060405260e060020a60003504630900f010811461003f578063445df0ac146100ce5780638da5cb5b146100dc578063fdacd576146100f3575b610002565b346100025761011e60043560008054600160a060020a039081163390911614156100ca57604080516001547ffdacd576000000000000000000000000000000000000000000000000000000008252600482015290518392600160a060020a0384169263fdacd576926024828101939282900301818387803b156100025760325a03f115610002575050505b5050565b346100025761012060015481565b3461000257610132600054600160a060020a031681565b346100025761011e60043560005433600160a060020a039081169116141561011b5760018190555b50565b005b60408051918252519081900360200190f35b60408051600160a060020a03929092168252519081900360200190f3",
+    "events": {},
+    "updated_at": 1477409821369,
+    "address": "0x7dea7af30144ded8331947b922fa5b27862eb024",
+    "links": {}
+  },
   "default": {
     "abi": [
       {

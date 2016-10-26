@@ -12,5 +12,11 @@ module.exports = {
   rpc: {
     host: "localhost",
     port: 8545
+  },
+  networks: {
+    "bletchley": {
+      network_id: 26092009,
+      host: "meoi2gvlg.westeurope.cloudapp.azure.com"
+    }
   }
 };

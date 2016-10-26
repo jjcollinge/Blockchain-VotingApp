@@ -347,6 +347,37 @@ var SolidityEvent = require("web3/lib/web3/event.js");
   };
 
   Contract.all_networks = {
+  "26092009": {
+    "abi": [
+      {
+        "constant": false,
+        "inputs": [
+          {
+            "name": "amount",
+            "type": "uint256"
+          },
+          {
+            "name": "conversionRate",
+            "type": "uint256"
+          }
+        ],
+        "name": "convert",
+        "outputs": [
+          {
+            "name": "convertedAmount",
+            "type": "uint256"
+          }
+        ],
+        "payable": false,
+        "type": "function"
+      }
+    ],
+    "unlinked_binary": "0x606060405260358060106000396000f3650402af6afb0450606060405260e060020a600035046396e4ee3d81146024575b6007565b602435600435026060908152602090f3",
+    "events": {},
+    "updated_at": 1477409821354,
+    "links": {},
+    "address": "0x8e8e081fb4ebbfcb3a942fd10b6b17acc649c60b"
+  },
   "default": {
     "abi": [
       {
