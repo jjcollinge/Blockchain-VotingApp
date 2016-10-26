@@ -6,8 +6,8 @@ import Web3 from 'web3'
 // Load ethereum client globally
 var web3 = new Web3(new Web3.providers.HttpProvider("http://localhost:8545"));
 
-var abi = [{"constant":false,"inputs":[],"name":"getCurrentVoters","outputs":[{"name":"","type":"uint256"}],"payable":false,"type":"function"},{"constant":true,"inputs":[{"name":"","type":"uint256"}],"name":"currentVoters","outputs":[{"name":"","type":"string"}],"payable":false,"type":"function"},{"constant":true,"inputs":[],"name":"currentProposalIndex","outputs":[{"name":"","type":"uint256"}],"payable":false,"type":"function"},{"constant":false,"inputs":[],"name":"closeVote","outputs":[],"payable":false,"type":"function"},{"constant":true,"inputs":[],"name":"votingIsOpen","outputs":[{"name":"","type":"bool"}],"payable":false,"type":"function"},{"constant":false,"inputs":[],"name":"getCurrentProposal","outputs":[{"name":"","type":"uint256"},{"name":"","type":"string"},{"name":"","type":"string"}],"payable":false,"type":"function"},{"constant":false,"inputs":[],"name":"getResults","outputs":[{"name":"","type":"string"},{"name":"","type":"uint256"},{"name":"","type":"string"},{"name":"","type":"uint256"}],"payable":false,"type":"function"},{"constant":false,"inputs":[{"name":"voteIndex","type":"uint256"},{"name":"voterId","type":"string"},{"name":"option","type":"int256"}],"name":"submitVote","outputs":[{"name":"","type":"bool"}],"payable":false,"type":"function"},{"constant":false,"inputs":[],"name":"nextVote","outputs":[],"payable":false,"type":"function"},{"inputs":[],"type":"constructor"}]
-var address = '0x7e5f5c5b0d36fa4728ff95e3321d703aac0cb52b';
+var abi = [{ "constant": false, "inputs": [], "name": "getCurrentVoters", "outputs": [{ "name": "", "type": "uint256" }], "payable": false, "type": "function" }, { "constant": true, "inputs": [{ "name": "", "type": "uint256" }], "name": "currentVoters", "outputs": [{ "name": "", "type": "string" }], "payable": false, "type": "function" }, { "constant": true, "inputs": [], "name": "currentProposalIndex", "outputs": [{ "name": "", "type": "uint256" }], "payable": false, "type": "function" }, { "constant": false, "inputs": [], "name": "closeVote", "outputs": [], "payable": false, "type": "function" }, { "constant": true, "inputs": [], "name": "votingIsOpen", "outputs": [{ "name": "", "type": "bool" }], "payable": false, "type": "function" }, { "constant": false, "inputs": [], "name": "getCurrentProposal", "outputs": [{ "name": "", "type": "uint256" }, { "name": "", "type": "string" }, { "name": "", "type": "string" }], "payable": false, "type": "function" }, { "constant": false, "inputs": [], "name": "getResults", "outputs": [{ "name": "", "type": "string" }, { "name": "", "type": "uint256" }, { "name": "", "type": "string" }, { "name": "", "type": "uint256" }], "payable": false, "type": "function" }, { "constant": false, "inputs": [{ "name": "voteIndex", "type": "uint256" }, { "name": "voterId", "type": "string" }, { "name": "option", "type": "int256" }], "name": "submitVote", "outputs": [{ "name": "", "type": "bool" }], "payable": false, "type": "function" }, { "constant": false, "inputs": [], "name": "nextVote", "outputs": [], "payable": false, "type": "function" }, { "inputs": [], "type": "constructor" }]
+var address = '0xcbbcf03ea3410706adbf1574d8c8139d87dd8004';
 var contract;
 
 class App extends Component {
@@ -40,26 +40,26 @@ class App extends Component {
   nextProposal() {
     var res;
     var self = this;
-    var timerId = setInterval(function() {
+    var timerId = setInterval(function () {
       res = contract.getCurrentProposal.call();
       var index = res[0].c[0]; // Unencoding BigNumber
       console.dir("Blockchain proposal index: " + index + "\nLocal proposal index: " + self.state.proposalIndex);
 
       // If blockchain index is different to client index
       // migrate to the blockchain index and stop checking
-      if(self.state.proposalIndex !== index) {
-          self.setState({
-            optionA: res[1],
-            optionAEnabled: true,
-            optionB: res[2],
-            optionBEnabled: true,
-            proposalIndex: index,
-            showResults: false,
-            results: "Results will be displayed when voting is closed."
-          });
-          clearInterval(timerId);
+      if (self.state.proposalIndex !== index) {
+        self.setState({
+          optionA: res[1],
+          optionAEnabled: true,
+          optionB: res[2],
+          optionBEnabled: true,
+          proposalIndex: index,
+          showResults: false,
+          results: "Results will be displayed when voting is closed."
+        });
+        clearInterval(timerId);
       }
-    }, 2000);  
+    }, 2000);
   }
 
   /**
@@ -83,18 +83,27 @@ class App extends Component {
   getResults() {
     var res;
     var self = this;
-    var timerId = setInterval(function() {
+    var timerId = setInterval(function () {
       res = contract.getResults.call();
       var optionA = res[0];
       var optionB = res[2];
       var totalVotesForOptionA = res[1].c[0];
       var totalVotesForOptionB = res[3].c[0];
-      var resString = optionA + ": " + totalVotesForOptionA + " and " + optionB + ": " + totalVotesForOptionB
-      console.log(resString);
-      if(totalVotesForOptionA !== 0 || totalVotesForOptionB !== 0) {
+      console.log("OpA votes: " + totalVotesForOptionA);
+      console.log("OpB votes: " + totalVotesForOptionB);
+
+      if (totalVotesForOptionA !== 0 || totalVotesForOptionB !== 0) {
         // Votes are registered so assume voting closed
+        var resultsString;
+        var draw = totalVotesForOptionA === totalVotesForOptionB;
+        if (draw) {
+          resultsString = "Oooo it's a draw at " + totalVotesForOptionA + " vote(s) each!"
+        } else {
+          var [winner, winnerVotes, loser, loserVotes] = totalVotesForOptionA > totalVotesForOptionB ? [optionA, totalVotesForOptionA, optionB, totalVotesForOptionB] : [optionB, totalVotesForOptionB, optionA, totalVotesForOptionA];
+          resultsString = winner + " wins with " + winnerVotes + " vote(s) to " + loser + "'s measly " + loserVotes + " vote(s)!";
+        }
         self.setState({
-          results: resString
+          results: resultsString
         });
         clearInterval(timerId);
       }
@@ -110,9 +119,11 @@ class App extends Component {
   handleVoteClick(option) {
     this.submitVote(option);
     // Stop client voting again
-    this.setState({optionAEnabled: false,
-                   optionBEnabled: false,
-                   showResults: true});
+    this.setState({
+      optionAEnabled: false,
+      optionBEnabled: false,
+      showResults: true
+    });
     this.getResults();
     this.nextProposal();
   }
@@ -127,7 +138,7 @@ class App extends Component {
   handleUsernameChange(evt) {
     console.dir("Set username to: " + evt.target.value);
     this.setState({
-        username: evt.target.value,
+      username: evt.target.value.toUpperCase(),
     });
   }
 
@@ -149,7 +160,7 @@ class App extends Component {
         <div className={this.state.showLogin ? 'App-login' : 'hidden'}>
           <p className="App-login-prompt">Please enter a username in the input field below to start voting.</p>
           <input type="text" className="App-login-text" placeholder="Username" onChange={this.handleUsernameChange.bind(this)}></input>
-          <button className="App-login-btn" onClick={() => this.setState({showLogin: false, showUsername:true, showProposal: true})}>Submit</button>
+          <button className="App-login-btn" onClick={() => this.setState({ showLogin: false, showUsername: true, showProposal: true })}>Submit</button>
         </div>
         <div className={this.state.showUsername ? 'App-username' : 'hidden'}>
           <p> {this.state.username} </p>

@@ -76,6 +76,11 @@
   display: block;
 }
 
+.App-results-text {
+  font-size: 1em;
+  margin-top: 25px;
+}
+
 .hidden {
   display: none;
 }

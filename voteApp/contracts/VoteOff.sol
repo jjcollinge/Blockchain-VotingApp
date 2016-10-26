@@ -46,7 +46,7 @@ contract VoteOff {
     }
 
     function submitVote(uint voteIndex, string voterId, int option) public returns (bool) {
-        
+
         if(votingIsOpen) {  
 
             // Check they are voting on the correct vote
@@ -103,19 +103,28 @@ contract VoteOff {
     }
 
     function nextVote() public {
+        
+        // Clear voting data
+        proposals[currentProposalIndex].optionA.count = 0;
+        proposals[currentProposalIndex].optionB.count = 0;
+        
         currentProposalIndex++;
 
-        // Reset questions to start
+        // Cycle every 'n' questions
         if(currentProposalIndex > 4) {
             currentProposalIndex = 0;
         }
         
+        // Clear votes
         for (var i = 0; i < currentVoters.length; i++) {
             var voterId = currentVoters[i];
             votes[voterId] = 0;
         }
 
+        // Clear voters
         currentVoters.length = 0;
+
+        // Reopen voting
         votingIsOpen = true;
     }
 
