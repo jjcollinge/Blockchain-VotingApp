@@ -576,9 +576,9 @@ var SolidityEvent = require("web3/lib/web3/event.js");
         "type": "event"
       }
     },
-    "updated_at": 1477501367881,
+    "updated_at": 1477639188676,
     "links": {
-      "ConvertLib": "0xe14d5a510615ab9c32e9d2a78feefd789fb4440c"
+      "ConvertLib": "0x40f6bfd0a95629a836e02825ccdc5ee4cbb37ffe"
     }
   }
 };

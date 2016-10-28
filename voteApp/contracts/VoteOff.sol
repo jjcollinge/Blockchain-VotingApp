@@ -1,7 +1,6 @@
 pragma solidity ^0.4.0;
 
 contract VoteOff {
-
     address owner;
     mapping(string => int) votes;
 
@@ -46,9 +45,8 @@ contract VoteOff {
     }
 
     function submitVote(uint voteIndex, string voterId, int option) public returns (bool) {
-
+        // Only allow voting if voting is open
         if(votingIsOpen) {  
-
             // Check they are voting on the correct vote
             if(voteIndex != currentProposalIndex)
                 return false;
@@ -70,7 +68,7 @@ contract VoteOff {
     }
 
     function canVote(string voterId) public constant returns (bool, string) {
-        // Is vote open?
+        // Only allow voting if voting is open
         if(!votingIsOpen) return (false, "Voting is currently closed");
 
         // Has voterId already been used?
@@ -99,51 +97,57 @@ contract VoteOff {
     }
 
     function closeVote() public {
-        // Stop voting
-        votingIsOpen = false;
+        // Only close voting if it is open
+        if(votingIsOpen) {
+            // Stop voting
+            votingIsOpen = false;
 
-        // Aggregate votes
-        for (var i = 0; i < currentVoters.length; i++) {
+            // Aggregate votes
+            for (var i = 0; i < currentVoters.length; i++) {
 
-            var voterId = currentVoters[i];
+                var voterId = currentVoters[i];
 
-            var vote = votes[voterId];
+                var vote = votes[voterId];
 
-            if(vote == -1){
-                proposals[currentProposalIndex].optionA.count++;
-            } else if(vote == 1) {
-                proposals[currentProposalIndex].optionB.count++;
+                if(vote == -1){
+                    proposals[currentProposalIndex].optionA.count++;
+                } else if(vote == 1) {
+                    proposals[currentProposalIndex].optionB.count++;
+                }
             }
         }
     }
 
     function nextVote() public {
-        
-        // Clear voting data
-        proposals[currentProposalIndex].optionA.count = 0;
-        proposals[currentProposalIndex].optionB.count = 0;
-        
-        currentProposalIndex++;
+        // Only progress voting if current round is closed
+        if(!votingIsOpen) {
+            // Clear voting data
+            proposals[currentProposalIndex].optionA.count = 0;
+            proposals[currentProposalIndex].optionB.count = 0;
+            
+            currentProposalIndex++;
 
-        // Cycle every 'n' questions
-        if(currentProposalIndex > 4) {
-            currentProposalIndex = 0;
+            // Cycle every 'n' questions
+            if(currentProposalIndex > 4) {
+                currentProposalIndex = 0;
+            }
+            
+            // Clear votes
+            for (var i = 0; i < currentVoters.length; i++) {
+                var voterId = currentVoters[i];
+                votes[voterId] = 0;
+            }
+
+            // Clear voters
+            currentVoters.length = 0;
+
+            // Reopen voting
+            votingIsOpen = true;
         }
-        
-        // Clear votes
-        for (var i = 0; i < currentVoters.length; i++) {
-            var voterId = currentVoters[i];
-            votes[voterId] = 0;
-        }
-
-        // Clear voters
-        currentVoters.length = 0;
-
-        // Reopen voting
-        votingIsOpen = true;
     }
 
-    function stringEquals(string a, string b) returns (bool) {
+    // Private utility functions
+    function stringEquals(string a, string b) constant returns (bool) {
         bytes memory _a = bytes(a);
         bytes memory _b = bytes(b);
         // If not same length - cannot be same value
@@ -158,5 +162,4 @@ contract VoteOff {
         }
         return true;
     }
-
 }
