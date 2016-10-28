@@ -62,7 +62,8 @@ class App extends Component {
           optionBEnabled: true,
           proposalIndex: index,
           showResults: false,
-          results: defaultVotedMsg // Reset message
+          results: defaultVotedMsg, // Reset message
+          showError: false // Clear any errors
         });
         clearInterval(timerId);
       }
@@ -152,6 +153,7 @@ class App extends Component {
       this.setState({
         showError: true
       });
+      this.nextProposal();
     }
   }
 
